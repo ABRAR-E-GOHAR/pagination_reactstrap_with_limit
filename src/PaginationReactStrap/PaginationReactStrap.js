@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Col, Container, Row, Table } from "reactstrap";
 import PaginationComponent from "react-reactstrap-pagination";
+import DownloadToCsvFile from "../DownloadToCsvFile/DownloadToCsvFile";
 
 function UserRow({ user }) {
   return (
@@ -12,11 +13,11 @@ function UserRow({ user }) {
   );
 }
 
-function App() {
+function PaginationReactStrap() {
   const [filteredUserList, newFilteredUserList] = useState(null);
   const [selectedPage, newSelectedPage] = useState(1);
   const [pageSize, newPageSize] = useState(8);
-  const [maxPaginationNumbers, newMaxPaginationNumbers] = useState(5);
+  const [maxPaginationNumbers] = useState(3);
 
   useEffect(() => {
     async function data() {
@@ -34,6 +35,8 @@ function App() {
   const changeHandler = ({ target }) => {
     newPageSize(parseInt(target.value));
   };
+
+  let csvData = [["Id", "Title", "Body"]];
 
   return (
     <div className="App">
@@ -57,9 +60,14 @@ function App() {
                         (selectedPage - 1) * pageSize,
                         selectedPage * pageSize
                       )
-                      .map((user, index) => (
-                        <UserRow key={index} number={index + 1} user={user} />
-                      ))
+                      .map((user, index) => {
+                        csvData.push([
+                          user.id.toString(),
+                          user.title,
+                          user.body,
+                        ]);
+                        return <UserRow key={index} user={user} />;
+                      })
                   ) : (
                     <tr>
                       <td>No User Found!</td>
@@ -71,8 +79,8 @@ function App() {
           </Col>
         </Row>
 
-        <Row>
-          <Col md={10}>
+        <Row className="d-flex align-items-flex-end">
+          <Col md={8}>
             {filteredUserList && (
               <PaginationComponent
                 size="sm"
@@ -85,7 +93,7 @@ function App() {
             )}
           </Col>
 
-          <Col md={2}>
+          <Col md={2} xs={6}>
             <input
               className="form-control"
               type="number"
@@ -95,10 +103,14 @@ function App() {
               value={pageSize}
             />
           </Col>
+
+          <Col md={2} xs={6}>
+            {csvData.length > 0 && <DownloadToCsvFile csvData={csvData} />}
+          </Col>
         </Row>
       </Container>
     </div>
   );
 }
 
-export default App;
+export default PaginationReactStrap;
